@@ -2,22 +2,11 @@ import express from "express";
 import dotenv from "dotenv";
 import Groq from "groq-sdk";
 
-
 dotenv.config();
 
 const app = express();
 
-// ✅ CORS seguro (permite tu dominio y localhost para pruebas)
-const allowedOrigins = [
-  "https://sistemamaestroia.com",
-  "https://www.sistemamaestroia.com",
-  "https://sistema-maestro-ia.vercel.app",
-  "http://localhost:3000",
-  "http://localhost:5173",
-  "http://127.0.0.1:3000",
-  "http://127.0.0.1:5173"
-];
-
+// ✅ CORS simple y funcional
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
@@ -25,13 +14,9 @@ app.use((req, res, next) => {
   next();
 });
 
-  methods: ["GET", "POST", "OPTIONS"],
-  allowedHeaders: ["Content-Type"],
-}));
-
 app.use(express.json({ limit: "1mb" }));
 
-// ✅ Cliente Groq (validación rápida de API key)
+// ✅ Cliente Groq
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
@@ -84,7 +69,6 @@ Sin explicaciones. Solo contenido estructurado.
   }
 });
 
-// ✅ Render: usar el puerto que te asigna la plataforma
 const PORT = Number(process.env.PORT) || 3000;
 
 app.listen(PORT, () => {
