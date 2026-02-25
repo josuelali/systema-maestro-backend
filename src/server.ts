@@ -8,32 +8,11 @@ dotenv.config();
 const app = express();
 
 /* =========================
-   CORS PRODUCCIÓN ESTABLE
+   CORS ABIERTO (TEMPORAL)
+   Para que funcione YA
 ========================= */
 
-const allowedOrigins = [
-  "https://sistemamaestroia.com",
-  "https://www.sistemamaestroia.com",
-  "https://sistema-maestro-ia.vercel.app",
-  "http://localhost:3000",
-  "http://localhost:5173",
-  "http://127.0.0.1:3000",
-  "http://127.0.0.1:5173"
-];
-
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin) return callback(null, true); // permitir Postman/health checks
-    if (allowedOrigins.includes(origin)) {
-      return callback(null, true);
-    }
-    return callback(new Error("CORS blocked: " + origin));
-  },
-  methods: ["GET", "POST", "OPTIONS"],
-  allowedHeaders: ["Content-Type"],
-}));
-
-// responder correctamente a preflight
+app.use(cors());
 app.options("*", cors());
 
 app.use(express.json({ limit: "1mb" }));
