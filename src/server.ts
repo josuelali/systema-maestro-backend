@@ -7,31 +7,34 @@ dotenv.config();
 
 const app = express();
 
-/* =========================
-   CORS ABIERTO (TEMPORAL)
-   Para que funcione YA
-========================= */
+// ✅ CORS seguro (permite tu dominio y localhost para pruebas)
+const allowedOrigins = [
+  "https://sistemamaestroia.com",
+  "https://www.sistemamaestroia.com",
+  "https://sistema-maestro-ia.vercel.app",
+  "http://localhost:3000",
+  "http://localhost:5173",
+  "http://127.0.0.1:3000",
+  "http://127.0.0.1:5173"
+];
 
-app.use(cors());
-app.options("*", cors());
+app.use(cors({
+  origin: (origin, callback) => {
+    // Permitir requests sin origin (Postman/curl/health checks)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error("CORS blocked: " + origin));
+  },
+  methods: ["GET", "POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type"],
+}));
 
 app.use(express.json({ limit: "1mb" }));
 
-/* =========================
-   GROQ CLIENT
-========================= */
-
-if (!process.env.GROQ_API_KEY) {
-  console.error("❌ GROQ_API_KEY no definida");
-}
-
+// ✅ Cliente Groq (validación rápida de API key)
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
-
-/* =========================
-   ROUTES
-========================= */
 
 app.get("/", (_req, res) => {
   res.status(200).json({ message: "Backend operativo" });
@@ -75,18 +78,14 @@ Sin explicaciones. Solo contenido estructurado.
     const result = completion?.choices?.[0]?.message?.content ?? "";
 
     return res.status(200).json({ result });
-
-  } catch (error: any) {
-    console.error("ERROR REAL GROQ:", error?.response?.data || error?.message || error);
+  } catch (error) {
+    console.error("ERROR REAL GROQ:", error);
     return res.status(500).json({ error: "Error generando contenido" });
   }
 });
 
-/* =========================
-   PORT RENDER
-========================= */
-
-const PORT = process.env.PORT || 3000;
+// ✅ Render: usar el puerto que te asigna la plataforma
+const PORT = Number(process.env.PORT) || 3000;
 
 app.listen(PORT, () => {
   console.log(`Servidor escuchando en puerto ${PORT}`);
