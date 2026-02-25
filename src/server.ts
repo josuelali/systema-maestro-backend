@@ -18,13 +18,13 @@ const allowedOrigins = [
   "http://127.0.0.1:5173"
 ];
 
-app.use(cors({
-  origin: (origin, callback) => {
-    // Permitir requests sin origin (Postman/curl/health checks)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) return callback(null, true);
-    return callback(new Error("CORS blocked: " + origin));
-  },
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type");
+  next();
+});
+
   methods: ["GET", "POST", "OPTIONS"],
   allowedHeaders: ["Content-Type"],
 }));
