@@ -7,9 +7,13 @@ dotenv.config();
 
 const app = express();
 
-// ✅ CORS seguro (permite tu dominio y localhost para pruebas)
+/* =========================
+   CORS PRODUCCIÓN ESTABLE
+========================= */
+
 const allowedOrigins = [
   "https://sistemamaestroia.com",
+  "https://www.sistemamaestroia.com",
   "http://localhost:3000",
   "http://localhost:5173",
   "http://127.0.0.1:3000",
@@ -18,21 +22,36 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: (origin, callback) => {
-    // Permitir requests sin origin (Postman/curl/health checks)
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) return callback(null, true);
+    if (!origin) return callback(null, true); // permitir Postman/health checks
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
     return callback(new Error("CORS blocked: " + origin));
   },
   methods: ["GET", "POST", "OPTIONS"],
   allowedHeaders: ["Content-Type"],
 }));
 
+// responder correctamente a preflight
+app.options("*", cors());
+
 app.use(express.json({ limit: "1mb" }));
 
-// ✅ Cliente Groq (validación rápida de API key)
+/* =========================
+   GROQ CLIENT
+========================= */
+
+if (!process.env.GROQ_API_KEY) {
+  console.error("❌ GROQ_API_KEY no definida");
+}
+
 const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
+
+/* =========================
+   ROUTES
+========================= */
 
 app.get("/", (_req, res) => {
   res.status(200).json({ message: "Backend operativo" });
@@ -76,13 +95,17 @@ Sin explicaciones. Solo contenido estructurado.
     const result = completion?.choices?.[0]?.message?.content ?? "";
 
     return res.status(200).json({ result });
-  } catch (error) {
-    console.error("ERROR REAL GROQ:", error);
+
+  } catch (error: any) {
+    console.error("ERROR REAL GROQ:", error?.response?.data || error?.message || error);
     return res.status(500).json({ error: "Error generando contenido" });
   }
 });
 
-// ✅ Render: usar el puerto que te asigna la plataforma
+/* =========================
+   PORT RENDER
+========================= */
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
