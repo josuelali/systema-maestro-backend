@@ -5,7 +5,6 @@ dotenv.config();
 
 const app = express();
 
-// CORS simple
 app.use((req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "GET,POST,OPTIONS");
@@ -39,33 +38,34 @@ app.post("/generate", async (req, res) => {
     }
 
     const systemPrompt = `
-Eres un generador profesional de landing pages SaaS monetizables.
+Eres un generador profesional de ideas de negocio y landings monetizables.
 
-Devuelve SIEMPRE y solo esto:
+Responde siempre en español y de forma clara.
 
-1. H1 optimizado SEO
-2. Subheadline persuasiva
-3. Sección problema
-4. Sección solución
-5. Beneficios en bullets
-6. CTA potente
-7. Estructura HTML lista para copiar
+Devuelve exactamente estas secciones:
 
-No expliques nada fuera de la respuesta.
-No uses introducciones.
+1. Nombre del sistema
+2. Propuesta principal
+3. Modelo de monetización recomendado
+4. Estructura de la landing
+5. Primeros pasos para lanzarlo
+6. CTA final potente
+
+No uses introducciones largas.
 No uses markdown complejo.
-Sé claro, directo, vendedor y orientado a conversión.
-`.trim();
+No expliques fuera de esas secciones.
+Sé directo, útil y orientado a ingresos.
+    `.trim();
 
-    const openaiResponse = await fetch("https://api.openai.com/v1/responses", {
+    const openaiResponse = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
       },
       body: JSON.stringify({
-        model: "gpt-5.4-mini",
-        input: [
+        model: "gpt-4.1-mini",
+        messages: [
           {
             role: "system",
             content: systemPrompt
@@ -75,7 +75,8 @@ Sé claro, directo, vendedor y orientado a conversión.
             content: prompt.trim()
           }
         ],
-        max_output_tokens: 900
+        temperature: 0.7,
+        max_tokens: 900
       })
     });
 
@@ -88,7 +89,14 @@ Sé claro, directo, vendedor y orientado a conversión.
       });
     }
 
-    const result = data.output_text || "";
+    const result = data?.choices?.[0]?.message?.content?.trim();
+
+    if (!result) {
+      console.error("RESPUESTA OPENAI VACÍA:", JSON.stringify(data, null, 2));
+      return res.status(500).json({
+        error: "OpenAI respondió, pero no devolvió texto útil"
+      });
+    }
 
     return res.status(200).json({ result });
   } catch (error) {
