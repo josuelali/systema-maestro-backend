@@ -5,24 +5,26 @@
   "main": "dist/server.js",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/server.js"
+    "start": "node dist/server.js",
+    "test": "npm run build && node --test tests/v1.test.mjs",
+    "test:live": "npm run build && node tests/phase0-live.mjs"
   },
   "engines": {
     "node": ">=20.0.0"
   },
   "dependencies": {
-    "bcrypt": "^5.1.0",
-    "cors": "^2.8.5",
     "dotenv": "^16.4.5",
     "express": "^4.18.2",
-    "groq-sdk": "^0.5.0",
-    "jsonwebtoken": "^9.0.2",
-    "pg": "^8.11.3"
+    "pg": "^8.23.0",
+    "stripe": "^22.6.1",
+    "zod": "^4.5.4"
   },
   "devDependencies": {
-    "@types/cors": "^2.8.17",
+    "@electric-sql/pglite": "^0.5.8",
+    "@types/emscripten": "^1.41.6",
     "@types/express": "^4.17.21",
     "@types/node": "^20.11.0",
+    "@types/pg": "^8.23.1",
     "typescript": "^5.3.3"
   }
 }
